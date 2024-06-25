@@ -1,11 +1,10 @@
 import type { FC, ReactNode } from "react";
-import { useCallback, useEffect, useReducer, useMemo } from "react";
-
+import { useCallback, useEffect, useReducer, useMemo, useState } from "react";
+import axios from "axios";
 import { authService } from "../services/AuthServices";
 import type { User } from "../types/user";
 import type { AuthContextType, State } from "../context/AuthContext";
-import { AuthContext } from "../context/AuthContext";
-import { initialState } from "../context/AuthContext";
+import { AuthContext, initialState } from "../context/AuthContext";
 
 enum ActionType {
   INITIALIZE = "INITIALIZE",
@@ -25,7 +24,6 @@ type InitializeAction = {
 type SignInAction = {
   type: ActionType.SIGN_IN;
   payload: {
-    user: User | null;
     isAuthenticated: boolean;
   };
 };
@@ -54,12 +52,10 @@ const handlers: Record<ActionType, Handler> = {
     };
   },
   SIGN_IN: (state: State, action: SignInAction): State => {
-    const { user } = action.payload;
 
     return {
       ...state,
       isAuthenticated: false,
-      user,
     };
   },
   SIGN_UP: (state: State): State => {
@@ -85,13 +81,13 @@ interface AuthProviderProps {
 export const AuthProvider: FC<AuthProviderProps> = (props) => {
   const { children } = props;
   const [state, dispatch] = useReducer(reducer, initialState);
+  const [token, setToken] = useState(localStorage.getItem("token"));
 
   const initialize = useCallback(async (): Promise<void> => {
     try {
       authService
         .me()
         .then((user) => {
-          console.log(user);
           dispatch({
             type: ActionType.INITIALIZE,
             payload: {
@@ -110,7 +106,6 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
           });
         });
     } catch (err) {
-      console.error(err);
       dispatch({
         type: ActionType.INITIALIZE,
         payload: {
@@ -125,16 +120,26 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
     initialize();
   }, []);
 
+  useEffect(() => {
+    if (token) {
+      axios.defaults.headers.common["Authorization"] = "Bearer " + token;
+      localStorage.setItem("token", token);
+    } else {
+      delete axios.defaults.headers.common["Authorization"];
+      localStorage.removeItem("token");
+    }
+  }, [token]);
+
   const signIn = useCallback(
     async (email: string, password: string): Promise<void> => {
       authService
-      authService.login(email, password)
+        .login(email, password)
         .then((user) => {
+          location.reload();
           dispatch({
             type: ActionType.SIGN_IN,
             payload: {
               isAuthenticated: true,
-              user,
             },
           });
         })
@@ -143,7 +148,6 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
             type: ActionType.SIGN_IN,
             payload: {
               isAuthenticated: false,
-              user: null,
             },
           });
         });
@@ -161,9 +165,16 @@ export const AuthProvider: FC<AuthProviderProps> = (props) => {
     [dispatch]
   );
 
-  const signOut = useCallback(async (): Promise<void> => {
-    dispatch({ type: ActionType.SIGN_OUT });
-  }, [dispatch]);
+
+  const signOut = useCallback(
+    async (): Promise<void> => {
+      await authService.logout();
+      dispatch({
+        type: ActionType.SIGN_OUT,
+      });
+    },
+    [dispatch]
+  );
 
   const contextValue: AuthContextType = useMemo(
     () => ({

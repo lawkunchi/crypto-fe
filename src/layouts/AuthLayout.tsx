@@ -4,13 +4,19 @@ import { useAuth } from "../hooks/useAuth";
 import { Navigate, Outlet, Link } from "react-router-dom";
 import Dropdown from "../components/Dropdown";
 import ResponsiveNavLink from "../components/ResponsiveNavLink";
-
 const AuthLayout: FC = () => {
 
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, signOut } = useAuth();
   const [showingNavigationDropdown, setShowingNavigationDropdown] = useState(false);
+  console.log(isAuthenticated, "isAuthenticated");
   if (!isAuthenticated) {
     return <Navigate to="/auth/login"></Navigate>;
+  }
+
+  const logout = () => {
+    if (isAuthenticated) {
+        signOut();
+    }
   }
 
   return (
@@ -65,8 +71,7 @@ const AuthLayout: FC = () => {
                                     </Dropdown.Trigger>
 
                                     <Dropdown.Content>
-                                        <Dropdown.Link to="/my-courses">My Courses</Dropdown.Link>
-                                        <Dropdown.Link href="" method="post" as="button">
+                                            <Dropdown.Link href="" method="post" as="button" onClick={(e)=> logout()}>
                                             Log Out
                                         </Dropdown.Link>
                                     </Dropdown.Content>
@@ -114,8 +119,7 @@ const AuthLayout: FC = () => {
                         </div>
 
                         <div className="mt-3 space-y-1">
-                            <ResponsiveNavLink path="/courses">My Courses</ResponsiveNavLink>
-                            <ResponsiveNavLink method="post" path="" as="button">
+                            <ResponsiveNavLink  path="/" onClick={(e)=> logout()}>
                                 Log Out
                             </ResponsiveNavLink> 
                         </div>

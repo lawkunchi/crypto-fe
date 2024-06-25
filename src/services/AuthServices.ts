@@ -1,10 +1,10 @@
 import { ApiService } from "./ApiService";
 
 class AuthService extends ApiService {
-  private authToken: string | null = null;
 
   constructor(baseURL: string) {
     super(baseURL);
+
     const token = localStorage.getItem("authToken");
     if (token) {
       this.setAuthToken(token);
@@ -12,22 +12,19 @@ class AuthService extends ApiService {
   }
 
   public setAuthToken(token: string) {
-    this.authToken = token;
+    localStorage.setItem("authToken", token);
     this.setDefaultHeader("Authorization", `Bearer ${token}`);
   }
 
   public clearAuthToken() {
-    this.authToken = null;
-    delete this.axiosInstance.defaults.headers.common["Authorization"];
-    localStorage.removeItem('authToken');
+    // delete this.axiosInstance.defaults.headers.common["Authorization"];
+    // localStorage.removeItem('authToken');
   }
 
   public async login(email: string, password: string): Promise<any> {
     const response = await super.post("/auth/login", { email, password });
-    console.log(response);
-    if (response.accessToken) {
-      const token = response.accessToken;
-      localStorage.setItem("authToken", token);
+    if (response?.accessToken) {
+      const token = response?.accessToken;
       this.setAuthToken(token);
     }
     return response;
@@ -42,7 +39,7 @@ class AuthService extends ApiService {
   }
 
   public async logout(): Promise<any> {
-    await super.post("/auth/logout", { email, password });
+    await super.get("/auth/logout");
     this.clearAuthToken();
   }
 

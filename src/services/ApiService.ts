@@ -3,7 +3,9 @@ import axios, { AxiosInstance, AxiosRequestConfig, AxiosResponse, AxiosError } f
 
 export abstract class ApiService {
   protected readonly axiosInstance: AxiosInstance;
-  constructor(baseURL: string = 'http://crypto-school.test/api', defaultHeaders?: Record<string, string>, timeout?: number) {
+
+
+  constructor(baseURL: string = import.meta.env.VITE_API_BASE_URL || 'http://crypto-school.test/api', defaultHeaders?: Record<string, string>, timeout?: number) {
     this.axiosInstance = axios.create({
       baseURL,
       headers: defaultHeaders,
@@ -16,6 +18,7 @@ export abstract class ApiService {
     if (token) {
       this.setAuthToken(token);
     }
+    
   }
 
   private setAuthToken(token: string) {

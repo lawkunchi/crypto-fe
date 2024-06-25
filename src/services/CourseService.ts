@@ -16,11 +16,11 @@ class CourseService extends ApiService {
   }
 
   public async registerToCourse(course_id: string): Promise<any> {
-    const response = await super.post("/course/register", { course_id });
+    const response = await super.get("course/register/"+ course_id);
     return response;
   }
   public async unRegisterToCourse(course_id: string): Promise<any> {
-    const response = await super.post("/course/unregister", { course_id });
+    const response = await super.get("course/unregister/"+ course_id);
     return response;
   }
 }

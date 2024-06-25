@@ -8,6 +8,8 @@ import Dashboard from './Pages/Dashboard';
 import Courses from './Pages/Courses';
 import MyCourses from './Pages/MyCourses';
 import Course from './Pages/Course';
+import Register from './Pages/Register';
+
 function App() {
   const element = useRoutes([
     {
@@ -25,6 +27,7 @@ function App() {
       element: <GuestLayout />,
       children: [
         { path: "/auth/login", element: <Login /> },
+        { path: "/auth/register", element: <Register /> },
       ],
     },
   ]);

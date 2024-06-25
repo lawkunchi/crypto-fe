@@ -6,6 +6,7 @@ export interface State {
   isInitialized: boolean;
   isAuthenticated: boolean;
   user: User | null;
+  token: string;
   error: string;
 }
 
@@ -14,6 +15,7 @@ export const initialState: State = {
   isInitialized: false,
   user: null,
   error: "",
+  token: "",
 };
 
 export interface AuthContextType extends State {
